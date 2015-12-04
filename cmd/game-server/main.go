@@ -1,11 +1,11 @@
 package main
 
 import (
-	"http"
 	"log"
+	"net/http"
 	"os"
 
-	"github.com/gin-gonic/gin"
+	"github.com/hueich/game-server/Godeps/_workspace/src/github.com/gin-gonic/gin"
 )
 
 func main() {
