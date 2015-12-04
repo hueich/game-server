@@ -1,0 +1,8 @@
+{
+	"ImportPath": "github.com/hueich/game-server",
+	"GoVersion": "go1.5.1",
+	"Packages": [
+		"./..."
+	],
+	"Deps": []
+}
