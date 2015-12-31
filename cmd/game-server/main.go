@@ -83,6 +83,8 @@ func connect(c *gin.Context) {
 	}
 
 	piece := &Piece{Name: "somepiece", CreatedAt: time.Now()}
+	piece.Coords = append(piece.Coords, Coord{1, 2})
+	piece.Coords = append(piece.Coords, Coord{5, 6})
 	if _, err := tx.Put(key, piece); err != nil {
 		log.Fatal(err)
 	}
