@@ -26,7 +26,7 @@ type Piece struct {
 	Name      string
 	Coords    []Coord
 	Corner    Coord
-	CP        *Coord
+	M         map[Coord]int
 	CreatedAt time.Time
 }
 
@@ -84,10 +84,11 @@ func connect(c *gin.Context) {
 		log.Fatal(err)
 	}
 
-	piece := &Piece{Name: "pieceWithCoords", Corner: Coord{3, 4}, CP: &Coord{9, 9}, CreatedAt: time.Now()}
+	piece := &Piece{Name: "pieceWithCoords", Corner: Coord{3, 4}, CreatedAt: time.Now()}
 	piece.Coords = append(piece.Coords, Coord{1, 2})
 	piece.Coords = append(piece.Coords, Coord{5, 6})
 	piece.Coords = append(piece.Coords, Coord{100, 300})
+	piece.M[Coord{9, 9}] = 777
 	if _, err := tx.Put(key, piece); err != nil {
 		log.Fatal(err)
 	}
