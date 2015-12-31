@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/hueich/game-server/Godeps/_workspace/src/github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/cloud"
