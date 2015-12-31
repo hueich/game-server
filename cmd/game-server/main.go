@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -47,20 +48,10 @@ func main() {
 	router.Run(":" + port)
 }
 
-func connect(c *gin.Context) {
-	// client, err := google.DefaultClient(context.Background(), datastore.ScopeDatastore)
-	//    if err != nil {
-	//            log.Fatalf("Unable to get default client: %v", err)
-	//    }
-	// service, err := storage.New(client)
-	//    if err != nil {
-	//            log.Fatalf("Unable to create storage service: %v", err)
-	//    }
-
+func getClient(ctx context.Context) (*datastore.Client, error) {
 	jsonKey := os.Getenv("KEY_JSON")
-	// jsonKey, err := ioutil.ReadFile("/path/to/json/keyfile.json")
 	if jsonKey == "" {
-		log.Fatal("KEY_JSON is empty!")
+		return nil, fmt.Errorf("KEY_JSON is empty!")
 	}
 	conf, err := google.JWTConfigFromJSON(
 		[]byte(jsonKey),
@@ -68,14 +59,22 @@ func connect(c *gin.Context) {
 		datastore.ScopeUserEmail,
 	)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	ctx := context.Background()
 	client, err := datastore.NewClient(ctx, projectID, cloud.WithTokenSource(conf.TokenSource(ctx)))
+	if err != nil {
+		return nil, err
+	}
+	log.Print("Got client!")
+	return client, nil
+}
+
+func connect(c *gin.Context) {
+	ctx := context.Background()
+	client, err := getClient(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Print("Connected!")
 
 	key := datastore.NewIncompleteKey(ctx, "Piece", nil)
 	tx, err := client.NewTransaction(ctx)
@@ -88,7 +87,6 @@ func connect(c *gin.Context) {
 		log.Fatal(err)
 	}
 
-	// Attempt to commit the transaction. If there's a conflict, try again.
 	if _, err := tx.Commit(); err != nil {
 		log.Fatal(err)
 	}
