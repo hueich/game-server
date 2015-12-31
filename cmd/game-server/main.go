@@ -7,11 +7,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"golang.org/x/net/context"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/cloud"
-	"google.golang.org/cloud/datastore"
+	"github.com/hueich/game-server/Godeps/_workspace/src/github.com/gin-gonic/gin"
+	"github.com/hueich/game-server/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/hueich/game-server/Godeps/_workspace/src/golang.org/x/oauth2/google"
+	"github.com/hueich/game-server/Godeps/_workspace/src/google.golang.org/cloud"
+	"github.com/hueich/game-server/Godeps/_workspace/src/google.golang.org/cloud/datastore"
 )
 
 const (
