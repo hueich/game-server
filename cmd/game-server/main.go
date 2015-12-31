@@ -83,7 +83,7 @@ func connect(c *gin.Context) {
 	}
 
 	piece := &Piece{Name: "somepiece", CreatedAt: time.Now()}
-	if _, err := tx.Put(key, &piece); err != nil {
+	if _, err := tx.Put(key, piece); err != nil {
 		log.Fatal(err)
 	}
 
