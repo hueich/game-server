@@ -84,7 +84,7 @@ func connect(c *gin.Context) {
 		log.Fatal(err)
 	}
 
-	piece := &Piece{Name: "pieceWithCoords", Corner: Coord{3, 4}, CreatedAt: time.Now()}
+	piece := &Piece{Name: "pieceWithCoords", Corner: Coord{3, 4}, M: make(map[Coord]int), CreatedAt: time.Now()}
 	piece.Coords = append(piece.Coords, Coord{1, 2})
 	piece.Coords = append(piece.Coords, Coord{5, 6})
 	piece.Coords = append(piece.Coords, Coord{100, 300})
