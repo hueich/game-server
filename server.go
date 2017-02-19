@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	bapi "github.com/hueich/blokus-web-api"
+	bui "github.com/hueich/blokus-web-ui"
 )
 
 var (
@@ -22,13 +23,19 @@ func main() {
 
 	r := mux.NewRouter()
 	br := r.PathPrefix("/blokus").Subrouter()
-	s, err := bapi.NewService(br.PathPrefix("/api").Subrouter())
+
+	sAPI, err := bapi.NewService(br.PathPrefix("/api").Subrouter())
 	if err != nil {
-		log.Fatalf("Could not create service: %v\n", err)
+		log.Fatalf("Could not create API service: %v\n", err)
 	}
-	defer s.Close()
-	if err := s.InitDBClient(context.Background(), "", ""); err != nil {
+	defer sAPI.Close()
+	if err := sAPI.InitDBClient(context.Background(), "", ""); err != nil {
 		log.Fatalf("Could not initialize client: %v\n", err)
+	}
+
+	_, err = bui.NewService(br, "/blokus/api")
+	if err != nil {
+		log.Fatalf("Could not create UI service: %v\n", err)
 	}
 
 	http.Handle("/", r)
