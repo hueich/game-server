@@ -27,7 +27,7 @@ func main() {
 		log.Fatalf("Could not create service: %v\n", err)
 	}
 	defer s.Close()
-	if err := s.InitClient(context.Background(), "", ""); err != nil {
+	if err := s.InitDBClient(context.Background(), "", ""); err != nil {
 		log.Fatalf("Could not initialize client: %v\n", err)
 	}
 
