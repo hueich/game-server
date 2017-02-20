@@ -33,7 +33,7 @@ func main() {
 		log.Fatalf("Could not initialize client: %v\n", err)
 	}
 
-	_, err = bui.NewService(br, "/blokus/api")
+	_, err = bui.NewService(br, "/blokus/api", "")
 	if err != nil {
 		log.Fatalf("Could not create UI service: %v\n", err)
 	}
