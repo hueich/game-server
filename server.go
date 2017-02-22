@@ -22,6 +22,7 @@ var (
 )
 
 func initSessionStore() error {
+	// DEBUG
 	log.Println("SERVER_SESSION_HASH_KEY:", os.Getenv("SERVER_SESSION_HASH_KEY"))
 	log.Println("SERVER_SESSION_ENCRYPT_KEY:", os.Getenv("SERVER_SESSION_ENCRYPT_KEY"))
 
@@ -48,12 +49,9 @@ func initSessionStore() error {
 	return nil
 }
 
-func main() {
-	log.Println("DATASTORE_PROJECT_ID:", os.Getenv("DATASTORE_PROJECT_ID"))
-	log.Println("GOOGLE_APPLICATION_CREDENTIALS:", os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
-
+func run() error {
 	if err := initSessionStore(); err != nil {
-		log.Fatalf("Could not initialize session store: %v\n", err)
+		return fmt.Errorf("Could not initialize session store: %v", err)
 	}
 
 	r := mux.NewRouter()
@@ -61,11 +59,11 @@ func main() {
 
 	sAPI, err := bapi.NewService(br.PathPrefix("/api").Subrouter())
 	if err != nil {
-		log.Fatalf("Could not create API service: %v\n", err)
+		return fmt.Errorf("Could not create API service: %v", err)
 	}
 	defer sAPI.Close()
 	if err := sAPI.InitDBClient(context.Background(), "", ""); err != nil {
-		log.Fatalf("Could not initialize client: %v\n", err)
+		return fmt.Errorf("Could not initialize client: %v", err)
 	}
 
 	_, err = bapp.NewService(&bapp.Options{
@@ -74,12 +72,25 @@ func main() {
 		Store:  sessionStore,
 	})
 	if err != nil {
-		log.Fatalf("Could not create app service: %v\n", err)
+		return fmt.Errorf("Could not create app service: %v", err)
 	}
 
 	http.Handle("/", r)
 	log.Println("Starting to listen on port", *port)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil); err != nil {
-		log.Fatalf("Could not start server: %v\n", err)
+		return fmt.Errorf("Could not start server: %v", err)
+	}
+	return nil
+}
+
+func main() {
+	flag.Parse()
+
+	// DEBUG
+	log.Println("DATASTORE_PROJECT_ID:", os.Getenv("DATASTORE_PROJECT_ID"))
+	log.Println("GOOGLE_APPLICATION_CREDENTIALS:", os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+
+	if err := run(); err != nil {
+		log.Fatalln(err)
 	}
 }
