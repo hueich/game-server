@@ -17,40 +17,38 @@ import (
 
 var (
 	port = flag.Int("port", 9090, "Port to start the server on")
-
-	sessionStore sessions.Store
 )
 
-func initSessionStore() error {
+func newSessionStore() (sessions.Store, error) {
 	// DEBUG
 	log.Println("SERVER_SESSION_HASH_KEY:", os.Getenv("SERVER_SESSION_HASH_KEY"))
 	log.Println("SERVER_SESSION_ENCRYPT_KEY:", os.Getenv("SERVER_SESSION_ENCRYPT_KEY"))
 
 	hkey, err := ioutil.ReadFile(os.Getenv("SERVER_SESSION_HASH_KEY"))
 	if err != nil {
-		return fmt.Errorf("Could not read session hash key file: %v", err)
+		return nil, fmt.Errorf("Could not read session hash key file: %v", err)
 	}
 	if len(hkey) == 0 {
-		return fmt.Errorf("Hash key content is empty")
+		return nil, fmt.Errorf("Hash key content is empty")
 	}
 
 	ekey, err := ioutil.ReadFile(os.Getenv("SERVER_SESSION_ENCRYPT_KEY"))
 	if err != nil {
-		return fmt.Errorf("Could not read session encryption key file: %v", err)
+		return nil, fmt.Errorf("Could not read session encryption key file: %v", err)
 	}
 	if len(ekey) == 0 {
-		return fmt.Errorf("Encryption key content is empty")
+		return nil, fmt.Errorf("Encryption key content is empty")
 	}
 
 	store := sessions.NewCookieStore(hkey, ekey)
 	store.Options.MaxAge = 1 * 24 * 60 * 60 // 1 day
 	store.Options.HttpOnly = true
-	sessionStore = store
-	return nil
+	return store, nil
 }
 
 func run() error {
-	if err := initSessionStore(); err != nil {
+	store, err := newSessionStore()
+	if err != nil {
 		return fmt.Errorf("Could not initialize session store: %v", err)
 	}
 
@@ -69,7 +67,7 @@ func run() error {
 	_, err = bapp.NewService(&bapp.Options{
 		Router: br,
 		ApiURL: "/blokus/api",
-		Store:  sessionStore,
+		Store:  store,
 	})
 	if err != nil {
 		return fmt.Errorf("Could not create app service: %v", err)
