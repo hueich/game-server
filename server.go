@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -55,14 +54,13 @@ func run() error {
 	r := mux.NewRouter()
 	br := r.PathPrefix("/blokus").Subrouter()
 
-	sAPI, err := bapi.NewService(br.PathPrefix("/api").Subrouter())
+	sAPI, err := bapi.NewService(&bapi.Options{
+		Router: br.PathPrefix("/api").Subrouter(),
+	})
 	if err != nil {
 		return fmt.Errorf("Could not create API service: %v", err)
 	}
 	defer sAPI.Close()
-	if err := sAPI.InitDBClient(context.Background(), "", ""); err != nil {
-		return fmt.Errorf("Could not initialize client: %v", err)
-	}
 
 	_, err = bapp.NewService(&bapp.Options{
 		Router: br,
