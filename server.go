@@ -10,8 +10,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
-	bapi "github.com/hueich/blokus-web-api"
-	bapp "github.com/hueich/blokus-web-app"
+	bapi "github.com/hueich/blokus/web/rest"
+	bapp "github.com/hueich/blokus/web/app"
 )
 
 var (
