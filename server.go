@@ -10,8 +10,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
-	bapi "github.com/hueich/blokus/web/rest"
 	bapp "github.com/hueich/blokus/web/app"
+	bapi "github.com/hueich/blokus/web/rest"
 )
 
 var (
@@ -51,11 +51,17 @@ func run() error {
 		return fmt.Errorf("Could not initialize session store: %v", err)
 	}
 
+	// DEBUG
+	log.Println("BLOKUS_PROJECT_ID:", os.Getenv("BLOKUS_PROJECT_ID"))
+	log.Println("BLOKUS_GAPP_CREDS:", os.Getenv("BLOKUS_GAPP_CREDS"))
+
 	r := mux.NewRouter()
 	br := r.PathPrefix("/blokus").Subrouter()
 
 	sAPI, err := bapi.NewService(&bapi.Options{
-		Router: br.PathPrefix("/api").Subrouter(),
+		Router:    br.PathPrefix("/api").Subrouter(),
+		ProjectID: os.Getenv("BLOKUS_PROJECT_ID"),
+		CredsFile: os.Getenv("BLOKUS_GAPP_CREDS"),
 	})
 	if err != nil {
 		return fmt.Errorf("Could not create API service: %v", err)
@@ -81,10 +87,6 @@ func run() error {
 
 func main() {
 	flag.Parse()
-
-	// DEBUG
-	log.Println("DATASTORE_PROJECT_ID:", os.Getenv("DATASTORE_PROJECT_ID"))
-	log.Println("GOOGLE_APPLICATION_CREDENTIALS:", os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
 
 	if err := run(); err != nil {
 		log.Fatalln(err)
