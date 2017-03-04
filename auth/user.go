@@ -8,9 +8,9 @@ import (
 )
 
 type userInfo struct {
-	Username string
-	PasswordHash []byte
-	Email string
+	Username     string
+	PasswordHash []byte `datastore:",noindex"`
+	Email        string
 }
 
 type UserManager struct {
