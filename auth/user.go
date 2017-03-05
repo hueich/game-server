@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"time"
 
 	"cloud.google.com/go/datastore"
 	"github.com/hueich/game-server/db"
@@ -11,6 +12,8 @@ type userInfo struct {
 	Username     string
 	PasswordHash []byte `datastore:",noindex"`
 	Email        string
+	TimeCreated  time.Time
+	TimeLastSeen time.Time
 }
 
 type UserManager struct {
