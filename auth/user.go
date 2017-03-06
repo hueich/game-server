@@ -35,23 +35,23 @@ func NewUserManager(ctx context.Context, projectID, credsFile string) (*UserMana
 	return &UserManager{client: c}, nil
 }
 
-func (m *UserManager) AddUser(ctx context.Context, username string, password []byte, email string) error {
+func (m *UserManager) AddUser(ctx context.Context, username string, password []byte, email string) (int64, error) {
 	if username == "" {
-		return fmt.Errorf("username cannot be empty")
+		return 0, fmt.Errorf("username cannot be empty")
 	}
 	if len(password) < MinPasswordLength {
-		return fmt.Errorf("password is too short")
+		return 0, fmt.Errorf("password is too short")
 	}
 	if email != "" {
 		addr, err := mail.ParseAddress(email)
 		if err != nil {
-			return fmt.Errorf("email is invalid")
+			return 0, fmt.Errorf("email is invalid")
 		}
 		email = addr.Address
 	}
 
-	_, err := m.client.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
-		// TODO: Check for existing user in db
+	var pk *datastore.PendingKey
+	commit, err := m.client.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 		q := datastore.NewQuery("User").Transaction(tx).Limit(1).Filter("Username =", username)
 		n, err := m.client.Count(ctx, q)
 		if err != nil {
@@ -74,14 +74,15 @@ func (m *UserManager) AddUser(ctx context.Context, username string, password []b
 			TimeLastSeen: time.Now(),
 		}
 
-		key := datastore.IncompleteKey("User", nil)
-		if _, err := tx.Put(key, u); err != nil {
+		pk, err = tx.Put(datastore.IncompleteKey("User", nil), u)
+		if err != nil {
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("failed to add new user: %v", err)
+		return 0, fmt.Errorf("failed to add new user: %v", err)
 	}
-	return nil
+	key := commit.Key(pk)
+	return key.ID, nil
 }
