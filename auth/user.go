@@ -36,6 +36,13 @@ func NewUserManager(ctx context.Context, projectID, credsFile string) (*UserMana
 	return &UserManager{client: c}, nil
 }
 
+func (m *UserManager) Close() error {
+	if m.client != nil {
+		return m.client.Close()
+	}
+	return nil
+}
+
 func (m *UserManager) AddUser(ctx context.Context, username string, password []byte, email string) (int64, error) {
 	if username == "" {
 		return 0, fmt.Errorf("username cannot be empty")
