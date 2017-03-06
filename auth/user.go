@@ -9,6 +9,7 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/hueich/game-server/db"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/api/iterator"
 )
 
 const (
@@ -82,6 +83,45 @@ func (m *UserManager) AddUser(ctx context.Context, username string, password []b
 	})
 	if err != nil {
 		return 0, fmt.Errorf("failed to add new user: %v", err)
+	}
+	key := commit.Key(pk)
+	return key.ID, nil
+}
+
+func (m *UserManager) LoginUser(ctx context.Context, username string, password []byte) (int64, error) {
+	if username == "" {
+		return 0, fmt.Errorf("username cannot be empty")
+	}
+	if len(password) == 0 {
+		return 0, fmt.Errorf("password cannot be empty")
+	}
+
+	var pk *datastore.PendingKey
+	commit, err := m.client.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		q := datastore.NewQuery("User").Transaction(tx).Limit(1).Filter("Username =", username)
+		var u userInfo
+		key, err := m.client.Run(ctx, q).Next(&u)
+		if err == iterator.Done {
+			return fmt.Errorf("user not found")
+		}
+		if err != nil {
+			return err
+		}
+
+		if err := bcrypt.CompareHashAndPassword(u.PasswordHash, password); err != nil {
+			return fmt.Errorf("incorrect password")
+		}
+
+		u.TimeLastSeen = time.Now()
+
+		pk, err = tx.Put(key, &u)
+		if err != nil {
+			return fmt.Errorf("failed to update user last login time: %v", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return 0, fmt.Errorf("failed to login user: %v", err)
 	}
 	key := commit.Key(pk)
 	return key.ID, nil
