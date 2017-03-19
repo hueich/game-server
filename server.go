@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -12,6 +13,7 @@ import (
 	"github.com/gorilla/sessions"
 	bapp "github.com/hueich/blokus/web/app"
 	bapi "github.com/hueich/blokus/web/rest"
+	"github.com/hueich/game-server/db"
 )
 
 var (
@@ -58,10 +60,15 @@ func run() error {
 	r := mux.NewRouter()
 	br := r.PathPrefix("/blokus").Subrouter()
 
-	sAPI, err := bapi.NewService(&bapi.Options{
-		Router:    br.PathPrefix("/api").Subrouter(),
-		ProjectID: os.Getenv("BLOKUS_PROJECT_ID"),
-		CredsFile: os.Getenv("BLOKUS_GAPP_CREDS"),
+	dsClient, err := db.NewDatastoreClient(context.Background(), os.Getenv("BLOKUS_PROJECT_ID"), os.Getenv("BLOKUS_GAPP_CREDS"))
+	if err != nil {
+		return err
+	}
+	defer dsClient.Close()
+
+	sAPI, err := bapi.NewService(bapi.Options{
+		Router: br.PathPrefix("/api").Subrouter(),
+		Client: dsClient,
 	})
 	if err != nil {
 		return fmt.Errorf("Could not create API service: %v", err)
